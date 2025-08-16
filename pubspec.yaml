@@ -4,7 +4,7 @@ description: "DSMS verifier terminal(also known as 3-No-Verification terminal), 
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.4+2
+version: 1.0.5+2
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
