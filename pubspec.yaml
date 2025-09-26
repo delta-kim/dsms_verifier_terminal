@@ -4,7 +4,7 @@ description: "DSMS verifier terminal(also known as 3-No-Verification terminal), 
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.5+2
+version: 1.0.7+2
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -16,13 +16,13 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  #cupertino_icons: ^1.0.2
   provider: ^6.1.2
   flutter_secure_storage: ^9.0.0
   slang: ^3.20.0
   slang_flutter: ^3.20.0
   qr_flutter: ^4.1.0
-  agent_dart: 1.0.0-dev.36
+  agent_dart: 1.0.0-dev.40
   flutter_localizations:
     sdk: flutter
   device_info_plus: ^11.4.0
@@ -37,6 +37,10 @@ dependencies:
   permission_handler: ^11.4.0
   #workmanager: ^0.6.0
 
+dependency_overrides:
+  pointycastle: ^4.0.0
+  agent_dart_base: 1.0.0-dev.40
+  agent_dart_ffi: 1.0.0-dev.40
 
 
 dev_dependencies:
