@@ -45,3 +45,10 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Ignore all Rust/Native build artifacts
+**/target/
+native/agent_dart/target/
+*.a
+*.so
+*.dylib

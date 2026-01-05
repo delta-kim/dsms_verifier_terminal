@@ -6,8 +6,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.4") // Android Gradle 插件
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22") // Kotlin 插件
+        classpath("com.android.tools.build:gradle:8.6.0") // Android Gradle 插件
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0") // Kotlin 插件
     }
 }
 
@@ -24,6 +24,15 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+    
+    // Ensure all subprojects use the same NDK version
+    project.afterEvaluate {
+        if (project.plugins.hasPlugin("com.android.application") || 
+            project.plugins.hasPlugin("com.android.library")) {
+            val android = project.extensions.findByName("android") as? com.android.build.gradle.BaseExtension
+            android?.ndkVersion = "27.0.12077973"
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")
