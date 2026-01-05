@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../i18n/strings.g.dart';
 import 'package:provider/provider.dart';
 import '../data.dart';
+import 'design_system.dart';
 
 class LanguageSwitch extends StatefulWidget {
   const LanguageSwitch({super.key});
@@ -34,39 +35,52 @@ class LanguageSwitchState extends State<LanguageSwitch> {
       return data.langCode == langCode;
     }
 
-    List<ListTile> buildListView() {
-      final List<ListTile> listTiles = [];
-      for (var item in langList) {
-        final name = item.values.first;
-        final code = item.values.last;
-        final selected = isSelected(code); // "code"
-        listTiles.add(ListTile(
-          title: Text(name),
-          trailing: selected ? const Icon(Icons.check) : null,
-          selected: selected,
-          onTap: () {
-            data.setLangCode(code);
-            if (code == 'auto') {
-              LocaleSettings.useDeviceLocale();
-            } else {
-              LocaleSettings.setLocaleRaw(code);
-            }
-
-            setState(() {});
-          },
-        ));
-      }
-      return listTiles;
-    }
-
     return Scaffold(
-        appBar: AppBar(
-          title: Text(t.languageSwitch),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(t.languageSwitch, style: AppTypography.h2),
+      ),
+      body: Container(
+        decoration: BoxDecoration(gradient: AppDesign.meshGradient(context)),
+        child: SafeArea(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            itemCount: langList.length,
+            itemBuilder: (context, index) {
+              final item = langList[index];
+              final name = item["name"]!;
+              final code = item["code"]!;
+              final selected = isSelected(code);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: AppDesign.glassMorphism(
+                  padding: EdgeInsets.zero,
+                  color: selected ? AppColors.electricBlue : Colors.white,
+                  opacity: selected ? 0.2 : 0.05,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    title: Text(name, style: AppTypography.body.copyWith(fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
+                    trailing: selected ? const Icon(Icons.check_circle, color: AppColors.electricBlue) : null,
+                    onTap: () {
+                      data.setLangCode(code);
+                      if (code == 'auto') {
+                        LocaleSettings.useDeviceLocale();
+                      } else {
+                        LocaleSettings.setLocaleRaw(code);
+                      }
+                      setState(() {});
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
         ),
-        body: Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: ListView(
-              children: buildListView(),
-            )));
+      ),
+    );
   }
 }

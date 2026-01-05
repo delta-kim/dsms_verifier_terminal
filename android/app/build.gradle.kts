@@ -64,7 +64,7 @@ android {
         applicationId = "kim.delta.dsms_terminal"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23 //flutter.minSdkVersion
+        minSdk = flutter.minSdkVersion //flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -75,10 +75,10 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias") as String
-            keyPassword = keystoreProperties.getProperty("keyPassword") as String
+            keyAlias = keystoreProperties.getProperty("keyAlias") ?: ""
+            keyPassword = keystoreProperties.getProperty("keyPassword") ?: ""
             storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
-            storePassword = keystoreProperties.getProperty("storePassword") as String
+            storePassword = keystoreProperties.getProperty("storePassword") ?: ""
         }
     }
 
@@ -93,6 +93,12 @@ android {
             //     getDefaultProguardFile("proguard-android-optimize.txt"),
             //     "proguard-rules.pro"
             // )
+        }
+    }
+
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("../../native/jniLibs")
         }
     }
 }

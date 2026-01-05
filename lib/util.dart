@@ -7,6 +7,7 @@ import './NavigatorProvider.dart';
 import 'dart:math' as math;
 import '../../data.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'design_system.dart';
 
 //import 'body/pages/punksBAYCdata.dart';
 const List<String> chars32 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "T", "U", "V", "W", "X", "Y"];
@@ -57,51 +58,45 @@ class Util {
 
   static Future<void> showAlert(String content, {String? title}) {
     final context = NavigatorProvider.navigatorContext;
-    return showDialog<void>(
-      context: context!,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("${title ?? t.tip}:"),
-          content: Text(content),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () => Navigator.of(context).pop(), // close dialog
-            ),
-          ],
-        );
-      },
+    if (context == null) return Future.value();
+    return AppDesign.glassDialog<void>(
+      context: context,
+      title: title ?? t.tip,
+      content: Text(content, style: AppTypography.body),
+      actions: [
+        TextButton(
+          child: Text("OK", style: AppTypography.body.copyWith(color: AppColors.electricBlue, fontWeight: FontWeight.bold)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 
   static Future<bool?> showConfirm<bool>(String content, {String? title}) {
     final context = NavigatorProvider.navigatorContext;
-    return showDialog<bool>(
-      context: context!,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("${title ?? t.tip}:"),
-          content: Text(content),
-          actions: <Widget>[
-            TextButton(
-              child: Text(t.cancel),
-              onPressed: () => Navigator.of(context).pop(false),
-            ),
-            TextButton(
-              child: Text(t.confirm),
-              onPressed: () => Navigator.of(context).pop(true),
-            ),
-          ],
-        );
-      },
+    if (context == null) return Future.value(null);
+    return AppDesign.glassDialog<bool>(
+      context: context,
+      title: title ?? t.tip,
+      content: Text(content, style: AppTypography.body),
+      actions: [
+        TextButton(
+          child: Text(t.cancel, style: AppTypography.body),
+          onPressed: () => Navigator.of(context).pop(false as dynamic),
+        ),
+        TextButton(
+          child: Text(t.confirm, style: AppTypography.body.copyWith(color: AppColors.electricBlue, fontWeight: FontWeight.bold)),
+          onPressed: () => Navigator.of(context).pop(true as dynamic),
+        ),
+      ],
     );
   }
 
   static Future<void> showLoadingDialog(String? symbol, {String showText = ""}) {
     final context = NavigatorProvider.navigatorContext;
+    if (context == null) return Future.value();
 
     var icon = Icons.manage_search_outlined;
-    //String showText = "Querying...";
     if (showText.isEmpty) {
       showText = t.querying;
     }
@@ -109,31 +104,20 @@ class Util {
       icon = Icons.save_as_outlined;
       showText = t.writingToOnChain_pleaseWait;
     }
-    return showDialog<void>(
-      context: context!,
-      barrierDismissible: false, //点击遮罩不关闭对话框
-      builder: (context) {
-        return UnconstrainedBox(
-            constrainedAxis: Axis.vertical,
-            child: SizedBox(
-              width: 300,
-              child: AlertDialog(
-                icon: Icon(icon),
-                iconColor: Colors.yellow[800],
-                backgroundColor: const Color.fromRGBO(255, 255, 255, 0.7),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    const CircularProgressIndicator(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 26.0),
-                      child: Text(showText),
-                    )
-                  ],
-                ),
-              ),
-            ));
-      },
+
+    return AppDesign.glassDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.gold, size: 48),
+          const SizedBox(height: 24),
+          const CircularProgressIndicator(color: AppColors.electricBlue),
+          const SizedBox(height: 24),
+          Text(showText, style: AppTypography.body, textAlign: TextAlign.center),
+        ],
+      ),
     );
   }
 
@@ -148,77 +132,84 @@ class Util {
 
   static Future<bool?> showConfirmYes<bool>(BuildContext context, String tip) {
     final formKey = GlobalKey<FormState>();
-    return showDialog<bool>(
+    return AppDesign.glassDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(tip),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              ),
-              maxLength: 3,
-              validator: (value) {
-                if (value != "yes") {
-                  return tip;
-                }
-                return null;
-              },
+      title: tip,
+      content: Form(
+        key: formKey,
+        child: TextFormField(
+          style: AppTypography.body,
+          decoration: InputDecoration(
+            hintText: "Type 'yes' to confirm",
+            hintStyle: AppTypography.caption,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.electricBlue),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(t.cancel),
-              onPressed: () => Navigator.of(context).pop(false),
-            ),
-            TextButton(
-              child: Text(t.confirm),
-              onPressed: () {
-                if ((formKey.currentState as FormState).validate()) {
-                  Navigator.of(context).pop(true);
-                }
-              },
-            ),
-          ],
-        );
-      },
+          maxLength: 3,
+          validator: (value) {
+            if (value != "yes") {
+              return tip;
+            }
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: Text(t.cancel, style: AppTypography.body),
+          onPressed: () => Navigator.of(context).pop(false as dynamic),
+        ),
+        TextButton(
+          child: Text(t.confirm, style: AppTypography.body.copyWith(color: AppColors.electricBlue, fontWeight: FontWeight.bold)),
+          onPressed: () {
+            if ((formKey.currentState as FormState).validate()) {
+              Navigator.of(context).pop(true as dynamic);
+            }
+          },
+        ),
+      ],
     );
   }
 
-  static Widget avatar(String avatarStr, String name, {void Function()? onTap, double textScaler = 0.6}) {
-    final avatarArr = avatarStr.toString().split("#");
-    return Stack(alignment: AlignmentDirectional.center, children: [
-      ClipRRect(
-        //borderRadius: BorderRadius.circular(10),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-        child: InkWell(
-          onTap: onTap,
-          child: Util.avatarImage(avatarStr),
-        ),
-      ),
-      Positioned(
-        bottom: 0,
-        child: Text(
-          name,
-          textScaler: TextScaler.linear(textScaler),
-          style: const TextStyle(color: Color.fromRGBO(255, 255, 225, 0.8), shadows: <Shadow>[
-            Shadow(
-              offset: Offset(1.0, 1.0),
-              blurRadius: 2.0,
-              color: Colors.black45,
+  static Widget avatar(String avatarStr, String name, {void Function()? onTap, double textScaler = 0.6, double size = 50}) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(alignment: AlignmentDirectional.center, children: [
+        ClipOval(
+          child: InkWell(
+            onTap: onTap,
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: Util.avatarImage(avatarStr),
             ),
-            Shadow(
-              offset: Offset(-1.0, -1.0),
-              blurRadius: 2.0,
-              color: Colors.black45,
-            ),
-          ]),
+          ),
         ),
-      )
-    ]);
+        Positioned(
+          bottom: 2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              name,
+              textScaler: TextScaler.linear(textScaler),
+              style: const TextStyle(color: Colors.white, fontSize: 10),
+            ),
+          ),
+        )
+      ]),
+    );
   }
 
   static Widget avatarImage(String avatarStr) {

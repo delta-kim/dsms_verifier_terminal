@@ -10,6 +10,7 @@ import '../dids/IC.dart' as ic;
 import 'package:permission_handler/permission_handler.dart';
 import 'language_switch.dart';
 import 'util.dart';
+import 'design_system.dart';
 
 class QqCodeLogin extends StatefulWidget {
   const QqCodeLogin({super.key});
@@ -37,91 +38,154 @@ class QqCodeLoginState extends State<QqCodeLogin> {
   @override
   Widget build(BuildContext context) {
     final mediaSize = MediaQuery.sizeOf(context);
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    BoxShadow boxShadow = const BoxShadow(
-      color: Color.fromRGBO(158, 158, 158, 0.5),
-      offset: Offset(0.5, 0.5),
-      blurRadius: 5,
-      spreadRadius: 2,
-    );
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: colorScheme.inversePrimary,
-        title: Text(t.loginWithQRcode),
-        actions: [Padding(padding: const EdgeInsets.only(right: 3), child: Text("v${data.packageVersion}"))],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(t.loginWithQRcode, style: AppTypography.h2),
+        actions:[
+            TextButton.icon(
+                  icon: const Icon(Icons.language, color: AppColors.electricBlue),
+                  label: Text(t.switchLanguage, style: AppTypography.body.copyWith(color: AppColors.electricBlue)),
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSwitch())),
+                ),
+            
+        ],
       ),
-      body: Column(
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(gradient: AppDesign.meshGradient(context)),
+        child: Center(
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              // Center(
+              //   child: AppDesign.glassMorphism(
+              //     padding: const EdgeInsets.all(24),
+              //     child: Hero(
+              //       tag: 'logo',
+              //       child: Image.asset("assets/img/logo2.png", width: 80),
+              //     ),
+              //   ),
+              // ),
+              const SizedBox(height: 50),
+              Text(
+                "Verifier Terminal",
+                textAlign: TextAlign.center,
+                style: AppTypography.h1,
+              ),
+              const SizedBox(height: 20),
+              if (loginSessionId == "null")
+                _buildLoginPrompt()
+              else if (sessionIdIsInvalidOrExpired != "" || loginSuccessful)
+                _buildStatusView()
+              else
+                _buildQRView(),
+              const SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  t.scanQRcodeSupportsDeltaversions,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.caption.copyWith(color: AppColors.vibrantRed.withOpacity(0.8)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      ),
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return AppDesign.glassMorphism(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+      child: Column(
         children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: TextButton.icon(
-                icon: const Icon(Icons.language), label: Text(t.switchLanguage), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LanguageSwitch()))),
-          ),
-          SizedBox(
-            width: mediaSize.width,
-            height: mediaSize.height * 0.05,
-          ),
-          Image.asset("assets/img/logo2.png", width: 120),
-          Text("DSMS verifier access terminal", textScaler: const TextScaler.linear(1.2), style: TextStyle(color: colorScheme.primary)),
-          const SizedBox(height: 20),
-          if (loginSessionId == "null")
-            OutlinedButton.icon(
-                onPressed: () {
-                  createSubAppAuthSession();
-                },
-                icon: const Icon(Icons.qr_code),
-                label: Text(t.loginWithQRcode))
-          else if (sessionIdIsInvalidOrExpired != "" || loginSuccessful)
-            Stack(
-              alignment: Alignment.center,
-              children: <Widget>[
-                Container(
-                  decoration: BoxDecoration(boxShadow: [boxShadow]),
-                  child: QrImageView(data: "sessionId Is Invalid Or Expired", version: QrVersions.auto, size: 150.0, padding: const EdgeInsets.all(6), backgroundColor: Colors.white70),
-                ),
-                Container(
-                  color: const Color.fromRGBO(255, 255, 255, 0.9),
-                  width: 156,
-                  height: 156,
-                ),
-                Column(
-                  children: [
-                    if (!loginSuccessful)
-                      ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              sessionIdIsInvalidOrExpired = "";
-                            });
-                            createSubAppAuthSession();
-                          },
-                          child: Text(t.refreshTheQRcode)),
-                    Text(
-                      loginSuccessful ? t.loginSuccessful : sessionIdIsInvalidOrExpired,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    )
-                  ],
-                )
-              ],
-            )
-          else ...[
-            Container(
-              decoration: BoxDecoration(boxShadow: [boxShadow]),
-              child: QrImageView(data: "delta://authorize|$loginSessionId", version: QrVersions.auto, size: 150.0, padding: const EdgeInsets.all(6), backgroundColor: Colors.white70),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.electricBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            const SizedBox(height: 9),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(padding: const EdgeInsets.only(right: 6), child: Image.asset("assets/img/scanIt.png", width: 40, color: colorScheme.primary)),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(t.useDeltaMobileApp), Text(t.scanQRcodeToLogin)],
-                ),
-              ],
+            onPressed: createSubAppAuthSession,
+            icon: const Icon(Icons.qr_code_scanner),
+            label: Text(t.loginWithQRcode, style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQRView() {
+    return Column(
+      children: [
+        AppDesign.glassMorphism(
+          padding: const EdgeInsets.all(12),
+          color: Colors.white,
+          opacity: 0.9,
+          child: QrImageView(
+            data: "delta://authorize|$loginSessionId",
+            version: QrVersions.auto,
+            size: 200.0,
+            padding: const EdgeInsets.all(10),
+          ),
+        ),
+        const SizedBox(height: 32),
+        AppDesign.glassMorphism(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset("assets/img/scanIt.png", width: 40, color: AppColors.electricBlue),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t.useDeltaMobileApp, style: AppTypography.body.copyWith(fontWeight: FontWeight.bold)),
+                  Text(t.scanQRcodeToLogin, style: AppTypography.caption),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusView() {
+    return AppDesign.glassMorphism(
+      padding: const EdgeInsets.all(32),
+      color: loginSuccessful ? AppColors.neonGreen : AppColors.vibrantRed,
+      opacity: 0.1,
+      child: Column(
+        children: [
+          Icon(
+            loginSuccessful ? Icons.check_circle_outline : Icons.error_outline,
+            size: 64,
+            color: loginSuccessful ? AppColors.neonGreen : AppColors.vibrantRed,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            loginSuccessful ? t.loginSuccessful : sessionIdIsInvalidOrExpired,
+            style: AppTypography.h2,
+            textAlign: TextAlign.center,
+          ),
+          if (!loginSuccessful) ...[
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                setState(() => sessionIdIsInvalidOrExpired = "");
+                createSubAppAuthSession();
+              },
+              child: Text(t.refreshTheQRcode),
             ),
           ],
-          const Spacer(),
-          Text(t.scanQRcodeSupportsDeltaversions, style: TextStyle(color: Colors.red))
         ],
       ),
     );
@@ -129,7 +193,6 @@ class QqCodeLoginState extends State<QqCodeLogin> {
 
   createSubAppAuthSession() async {
     if (platformName == "" || deviceModel == "") {
-      // platformName = defaultTargetPlatform.toString();
       if (defaultTargetPlatform == TargetPlatform.android) {
         final androidInfo = await deviceInfoPlugin.androidInfo;
         platformName = "Android";
@@ -161,7 +224,6 @@ class QqCodeLoginState extends State<QqCodeLogin> {
           responded = false;
           final identityTokenOpt = await ic.DappCenter.exec("querySubAppAuthByApp", args: [loginSessionId]);
           responded = true;
-          print(identityTokenOpt);
           if (identityTokenOpt is List) {
             if (identityTokenOpt.isNotEmpty) {
               timer.cancel();
